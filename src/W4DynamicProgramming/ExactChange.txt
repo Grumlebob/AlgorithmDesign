@@ -1,0 +1,20 @@
+﻿Tjek vores gruppe rapport
+
+
+1.4 Explanation of our accepted solution
+To solve this assignment, we have used dynamic programming, with a bottomup
+approach.
+Subproblems: Best amount of moves to hit target x
+Base case: How many cards to use, to hit a target of zero = 0.
+Memoization: Save the best amount of moves to hit every target x in our
+memoized array[x].
+Recursive step: Check moves to hit target x+1, with the different cards available,
+compared to what we have memoized already, until we reach the desired
+target.
+Bottom-up approach: We start by checking best amount of moves to hit
+0 and then increment by 1 every time, until we reached the top, being our desired
+target to hit. Lets say we are currently looking for best move to hit target
+19, and we are currently looking at card 5. Then we can check our best way to
+hit 19−5 = 14 and see if we can take 1 additional card, the 5, being the lowest
+amount to now hit 19, if so, we update our memoized array[19] with the new
+best result.
