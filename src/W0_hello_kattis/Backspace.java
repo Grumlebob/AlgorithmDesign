@@ -22,5 +22,8 @@ public class Backspace {
             }
         }
         System.out.println(sb.toString());
+
+        //Total runtime er O(n) hvor n er længden af input.
+
     }
 }
