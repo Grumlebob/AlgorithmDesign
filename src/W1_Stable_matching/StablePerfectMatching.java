@@ -1,8 +1,8 @@
 package W1_Stable_matching;
 
 /*Notes:
-r: rejecter
-p: proposer
+r: rejecter / women
+p: proposer / men
 S: matching
 P: proposers
 R: rejecters

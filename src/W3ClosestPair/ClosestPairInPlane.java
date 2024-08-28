@@ -11,6 +11,7 @@ import java.util.Scanner;
 // Hjælp fra: https://www.youtube.com/watch?v=6u_hWxbOc7E
 // Runtime er O(n logn).
 public class ClosestPairInPlane {
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -20,12 +21,12 @@ public class ClosestPairInPlane {
         //Liste af punkter
         List<Point> points = new ArrayList<>();
 
-        //Parse input
+        //Parse input (x,y) til punkter.
         for (int i = 0; i < n; i++) {
-            String xStr = scanner.next(); // Read x-coordinate as string
-            String yStr = scanner.next(); // Read y-coordinate as string
-            float x = Float.parseFloat(xStr); // Parse x-coordinate to float
-            float y = Float.parseFloat(yStr); // Parse y-coordinate to float
+            String xStr = scanner.next();
+            String yStr = scanner.next();
+            float x = Float.parseFloat(xStr);
+            float y = Float.parseFloat(yStr);
             points.add(new Point(x, y));
         }
 
@@ -36,15 +37,17 @@ public class ClosestPairInPlane {
         //Vi finder det nærmeste punktpar
         ClosestPairResult result = closestPair(sortedPointsByX, sortedPointsByY);
 
-        //Output det nærmeste punktpar
+        //Output i det ønskede format.
         System.out.printf("%.2f %.2f\n%.2f %.2f\n", result.point1.x, result.point1.y, result.point2.x, result.point2.y);
     }
 
     public static ClosestPairResult closestPair(List<Point> sortedPointsByX, List<Point> sortedPointsByY) {
         int n = sortedPointsByX.size();
 
-        //Base cases:
-        //hvis vi har 1 punkt, så er der ingen distance og ingen punkter.
+        //Base cases. Når vi splitter kan vi inde med en liste med 1, 2 eller 3 punkter:
+        //såsom 6 splittet: 3-3
+        //såsom 5 splittet: 3-2
+        //hvis vi har 1 punkt er det ikke et pair og derfor returnerer vi uendelig distance.
         if (n == 1) {
             return new ClosestPairResult(Double.POSITIVE_INFINITY, null, null);
         }
@@ -69,12 +72,19 @@ public class ClosestPairInPlane {
             }
         }
 
+        //DIVIDE AND CONQUER
+
         //Vi deler listen 50/50
         //(Divide Left): Delta distance venstre
         ClosestPairResult deltaLeft = closestPair(sortedPointsByX.subList(0, n / 2), sortedPointsByY);
         //(Divide Right): Delta distance højre
         ClosestPairResult deltaRight = closestPair(sortedPointsByX.subList(n / 2, n), sortedPointsByY);
+        //Vi kigger på bedste delta fra vores højre og venstre svar.
         ClosestPairResult delta = deltaLeft.distance < deltaRight.distance ? deltaLeft : deltaRight;
+
+        //Dog er det ikke sikkert at vi har fundet bedste delta, fordi der kan være
+        //punkter imellem opdelingen som er tættest.
+        //Derfor skal vi tjekke "the strip"
 
         //Combine step
         //Vi finder den midterste x-koordinat.
@@ -82,7 +92,7 @@ public class ClosestPairInPlane {
 
         //Vi finder alle punkter fra Y (som er hele listen) som er indenfor delta distance fra midX.
         List<Point> strip = new ArrayList<>();
-        for (Point point : sortedPointsByY) {
+        for (Point point : sortedPointsByY) { //bemærk, vi bruger sorteret af y nu!
             if (Math.abs(point.x - midX) < delta.distance) {
                 strip.add(point);
             }
@@ -95,7 +105,8 @@ public class ClosestPairInPlane {
         for (int i = 0; i < strip.size(); i++) {
             //Vi løber igennem de næste 7 punkter.
             //Dette er fordi vi ved at den næste punkt ikke kan være længere væk end delta.
-            //Derfor er det nok at kigge på de næste 7 punkter, så dette tæller faktisk som runtime O(1).
+            //Derfor er det nok at kigge på de næste 7 punkter,
+            //så dette tæller faktisk som runtime O(1).
             for (int j = i + 1; j < Math.min(i + 7, strip.size()); j++) {
                 double dist = strip.get(i).distance(strip.get(j));
                 if (dist < delta.distance) {
@@ -121,6 +132,7 @@ class Point {
     }
 }
 
+//Nemmere at gemme som klasse, da vi skal ikke kun skal returnere distancen, men også de to punkter.
 class ClosestPairResult {
     double distance;
     Point point1;
