@@ -47,7 +47,9 @@ public class ClosestPairInPlane {
         //Base cases. Når vi splitter kan vi inde med en liste med 1, 2 eller 3 punkter:
         //såsom 6 splittet: 3-3
         //såsom 5 splittet: 3-2
+        //Såsom 3 splittet: 2-1
         //hvis vi har 1 punkt er det ikke et pair og derfor returnerer vi uendelig distance.
+
         if (n == 1) {
             return new ClosestPairResult(Double.POSITIVE_INFINITY, null, null);
         }
@@ -83,8 +85,8 @@ public class ClosestPairInPlane {
         ClosestPairResult delta = deltaLeft.distance < deltaRight.distance ? deltaLeft : deltaRight;
 
         //Dog er det ikke sikkert at vi har fundet bedste delta, fordi der kan være
-        //punkter imellem opdelingen som er tættest.
-        //Derfor skal vi tjekke "the strip"
+        //punkter imellem opdelingen som er tættest, altså noget i Left er tættest på noget i Right
+        //Derfor skal vi tjekke "the strip", som kigger på en delta afstand væk, og tjekker de punkter
 
         //Combine step
         //Vi finder den midterste x-koordinat.
