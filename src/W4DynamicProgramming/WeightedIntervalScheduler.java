@@ -1,4 +1,4 @@
-﻿package W4DynamicProgramming;
+package W4DynamicProgramming;
 
 import java.util.Arrays;
 import java.util.Scanner;
