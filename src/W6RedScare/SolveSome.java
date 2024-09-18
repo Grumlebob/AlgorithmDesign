@@ -13,70 +13,103 @@ public class SolveSome {
         this.endVertex = endVertex;
     }
 
-    public boolean solve() {
-        return dfsSimplePathIterative();
-    }
-
-    private class NodeState {
-        String currentNodeId;
+    private class TraverseState {
+        String currentNode;
         boolean hasEncounteredRedNodeInPath;
-        Iterator<String> nodeNeighbours;
+        Iterator<String> currentNodeNeighbours;
 
-        NodeState(String currentNodeId, boolean hasEncounteredRedNodeInPath) {
-            this.currentNodeId = currentNodeId;
+        TraverseState(String currentNode, boolean hasEncounteredRedNodeInPath) {
+            this.currentNode = currentNode;
             this.hasEncounteredRedNodeInPath = hasEncounteredRedNodeInPath;
-            this.nodeNeighbours = graph.adj(currentNodeId).iterator();
+            this.currentNodeNeighbours = graph.adj(currentNode).iterator();
         }
     }
 
-    private boolean dfsSimplePathIterative() {
+    public ResultWithInfo findPathWithRedNodeDfs(long startTime, long timeLimit) {
         //FIFO stack for DFS traversal
-        Stack<NodeState> dfsTraversalStack = new Stack<>();
+        Stack<TraverseState> dfsTraversalStack = new Stack<>();
+        //Nodes where all neighbor sub-graphs have been fully explored
         Set<String> fullyExploredGraphNodes = new HashSet<>();
-        Set<String> graphNodesInCurrentExplorationPath = new HashSet<>();
+        //"Marked" nodes in current exploration path
+        Set<String> nodesInCurrentPath = new HashSet<>();
 
         // Initialize with the start vertex
-        boolean initialNodeHasEncounteredRedNodeInPath = graph.vertexColors.getOrDefault(startVertex, false);
-        dfsTraversalStack.push(new NodeState(startVertex, initialNodeHasEncounteredRedNodeInPath));
-        graphNodesInCurrentExplorationPath.add(startVertex);
+        boolean isStartVertexRed = graph.vertexColors.get(startVertex);
+        dfsTraversalStack.push(new TraverseState(startVertex, isStartVertexRed));
+        nodesInCurrentPath.add(startVertex);
 
         while (!dfsTraversalStack.isEmpty()) {
-            NodeState currentTraversalNodeState = dfsTraversalStack.peek();
-            String currentGraphNodeIdentifier = currentTraversalNodeState.currentNodeId;
-            boolean hasEncounteredRedNodeInPath = currentTraversalNodeState.hasEncounteredRedNodeInPath;
+            if (System.currentTimeMillis() - startTime > timeLimit) {
+                // Time limit exceeded; return false
+                return ResultWithInfo.TIMEOUT;
+            }
+
+            TraverseState currentTraverseState = dfsTraversalStack.peek();
+            String currentNode = currentTraverseState.currentNode;
+            boolean redNodeEncountered = currentTraverseState.hasEncounteredRedNodeInPath;
 
             // Base case: if current node is the end vertex
-            if (currentGraphNodeIdentifier.equals(endVertex)) {
-                if (hasEncounteredRedNodeInPath) {
-                    return true;
+            if (currentNode.equals(endVertex)) {
+                if (redNodeEncountered) {
+                    return ResultWithInfo.TRUE;
                 }
                 // Backtracking logic
                 dfsTraversalStack.pop();
                 // We make current path, available for exploration again from other nodes
-                graphNodesInCurrentExplorationPath.remove(currentGraphNodeIdentifier);
+                nodesInCurrentPath.remove(currentNode);
                 // Mark current node as fully explored, so it won't be explored again
-                fullyExploredGraphNodes.add(currentGraphNodeIdentifier);
+                fullyExploredGraphNodes.add(currentNode);
                 continue;
             }
 
             // Explore neighbors
-            if (currentTraversalNodeState.nodeNeighbours.hasNext()) {
-                String neighborGraphNodeIdentifier = currentTraversalNodeState.nodeNeighbours.next();
-                if (!graphNodesInCurrentExplorationPath.contains(neighborGraphNodeIdentifier) && !fullyExploredGraphNodes.contains(neighborGraphNodeIdentifier)) {
-                    boolean neighborNodeHasEncounteredRedNodeInPath = hasEncounteredRedNodeInPath || graph.vertexColors.getOrDefault(neighborGraphNodeIdentifier, false);
+            if (currentTraverseState.currentNodeNeighbours.hasNext()) {
+                String neighborNode = currentTraverseState.currentNodeNeighbours.next();
+                if (!nodesInCurrentPath.contains(neighborNode) && (!fullyExploredGraphNodes.contains(neighborNode) || redNodeEncountered)) {
+                    boolean neighborNodeHasEncounteredRedNodeInPath = redNodeEncountered || graph.vertexColors.get(neighborNode);
                     // Push neighbor to stack
-                    dfsTraversalStack.push(new NodeState(neighborGraphNodeIdentifier, neighborNodeHasEncounteredRedNodeInPath));
-                    graphNodesInCurrentExplorationPath.add(neighborGraphNodeIdentifier);
+                    dfsTraversalStack.push(new TraverseState(neighborNode, neighborNodeHasEncounteredRedNodeInPath));
+                    nodesInCurrentPath.add(neighborNode);
                 }
             } else {
                 // Backtrack: No more neighbors to explore from current node
                 dfsTraversalStack.pop();
-                graphNodesInCurrentExplorationPath.remove(currentGraphNodeIdentifier);
-                fullyExploredGraphNodes.add(currentGraphNodeIdentifier);
+                nodesInCurrentPath.remove(currentNode);
+                fullyExploredGraphNodes.add(currentNode);
             }
         }
 
         //No valid path with a red node found
-        return false;
+        return ResultWithInfo.FALSE;
     }
+
+    public static void VerifyEdgecaseResults(String filename, ResultWithInfo result) {
+        switch (filename) {
+            case "edgecase-solveNone-blackSrcToRedSink.txt",
+                 "edgecase-solveNone-redSrcToBlackSink.txt",
+                 "edgecase-solveSome-simple-example.txt",
+                 "increase-n8-1.txt",
+                 "G-ex.txt",
+                 "P3.txt",
+                 "rusty-1-17.txt",
+                 "grid-5-0.txt",
+                 "ski-illustration.txt":
+                if (result != ResultWithInfo.TRUE) {
+                    System.out.println("------------");
+                    System.out.println("ERROR: Expected true, got " + result);
+                    System.out.println("------------");
+                }
+                break;
+
+            case "wall-z-3.txt":
+                if (result != ResultWithInfo.FALSE) {
+                    System.out.println("------------");
+                    System.out.println("ERROR: Expected false, got " + result);
+                    System.out.println("------------");
+                }
+                break;
+
+        }
+    }
+
 }

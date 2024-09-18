@@ -14,9 +14,9 @@ public class Graph {
     private static final String NEWLINE = System.getProperty("line.separator");
 
     public int V; // number of vertices in this graph
-    private int E;       // number of edges in this graph
-    private Bag<Integer>[] adj;    // adj[v] = adjacency list for vertex v
-    private int[] indegree;        // indegree[v] = indegree of vertex v
+    public int E;       // number of edges in this graph
+    public Bag<Integer>[] adj;    // adj[v] = adjacency list for vertex v
+    public int[] indegree;        // indegree[v] = indegree of vertex v
     public HashMap<String, Integer> nameToIndex; // map from vertex name to index
     public ArrayList<String> indexToName;        // map from index to vertex name
 
@@ -137,7 +137,7 @@ public class Graph {
      * USED FOR SOLVENONE, where we remove red vertices from the graph
      * Removes all red vertices from the graph and updates all relevant data structures.
      */
-    public void removeAllRed() {
+    public void removeAllRed(int s, int t) {
         // Create a boolean array to mark red vertices
         boolean[] isRedVertex = new boolean[V];
         for (int v = 0; v < V; v++) {
@@ -146,6 +146,10 @@ public class Graph {
                 isRedVertex[v] = true;
             }
         }
+
+        // Do not remove s and t even if they are red
+        isRedVertex[s] = false;
+        isRedVertex[t] = false;
 
         // Update adjacency lists to exclude edges to red vertices
         for (int v = 0; v < V; v++) {
@@ -161,14 +165,14 @@ public class Graph {
                     }
                 }
                 adj[v] = newAdjList;
-            } else {
+            } else if (isRedVertex[v]) {
                 adj[v] = null; // Remove adjacency list for red vertices
             }
         }
 
-        // Remove red vertices from data structures
+        // Remove red vertices from data structures, except s and t
         for (int v = 0; v < V; v++) {
-            if (isRedVertex[v]) {
+            if (isRedVertex[v] && v != s && v != t) {
                 String vertexName = indexToName.get(v);
                 nameToIndex.remove(vertexName);
                 indexToName.set(v, null);
@@ -177,6 +181,7 @@ public class Graph {
             }
         }
     }
+
 
     /**
      * Returns the vertices adjacent from vertex with the given name in this graph.
