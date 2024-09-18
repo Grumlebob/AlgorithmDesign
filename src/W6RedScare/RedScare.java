@@ -19,7 +19,50 @@ public class RedScare {
         redScare.processAllFiles(dataDirectory);
     }
 
-    public void processAllFiles(File directory) {
+
+    private int solveNone() {
+        //return -1;
+        // Create a copy of the graph to avoid modifying the original
+        Graph graphCopy = graph.copy();
+        graphCopy.removeAllRed();
+
+        //Check if start and end is still in the graph, ie not red.
+        Integer startIdx = graphCopy.nameToIndex.get(startVertex);
+        Integer endIdx = graphCopy.nameToIndex.get(endVertex);
+
+        if (startIdx == null || endIdx == null) {
+            // One or both vertices have been removed; no path exists
+            return -1;
+        }
+
+        SolveNone solver = new SolveNone(graphCopy, startIdx);
+        return solver.distTo(endIdx);
+    }
+
+    private boolean solveSome() {
+        Graph graphCopy = graph.copy();
+
+        SolveSome solver = new SolveSome(graphCopy, startVertex, endVertex);
+        return solver.solve();
+    }
+
+
+    private int solveMany() {
+        // TODO: Implement solution for the "Many" problem.
+        return -1; // Placeholder return value
+    }
+
+    private int solveFew() {
+        // TODO: Implement solution for the "Few" problem.
+        return -1; // Placeholder return value
+    }
+
+    private boolean solveAlternate() {
+        // TODO: Implement solution for the "Alternate" problem.
+        return false; // Placeholder return value
+    }
+
+    private void processAllFiles(File directory) {
         File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
 
         if (files == null || files.length == 0) {
@@ -90,31 +133,5 @@ public class RedScare {
         }
 
         scanner.close();
-    }
-
-    private int solveNone() {
-        // TODO: Implement solution for the "None" problem.
-        return -1; // Placeholder return value
-    }
-
-
-    private boolean solveSome() {
-        SolveSome solver = new SolveSome(graph, startVertex, endVertex);
-        return solver.solve();
-    }
-
-    private int solveMany() {
-        // TODO: Implement solution for the "Many" problem.
-        return -1; // Placeholder return value
-    }
-
-    private int solveFew() {
-        // TODO: Implement solution for the "Few" problem.
-        return -1; // Placeholder return value
-    }
-
-    private boolean solveAlternate() {
-        // TODO: Implement solution for the "Alternate" problem.
-        return false; // Placeholder return value
     }
 }

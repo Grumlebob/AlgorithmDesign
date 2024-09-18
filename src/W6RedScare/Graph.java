@@ -17,8 +17,8 @@ public class Graph {
     private int E;       // number of edges in this graph
     private Bag<Integer>[] adj;    // adj[v] = adjacency list for vertex v
     private int[] indegree;        // indegree[v] = indegree of vertex v
-    private HashMap<String, Integer> nameToIndex; // map from vertex name to index
-    private ArrayList<String> indexToName;        // map from index to vertex name
+    public HashMap<String, Integer> nameToIndex; // map from vertex name to index
+    public ArrayList<String> indexToName;        // map from index to vertex name
 
     public HashMap<String, Boolean> vertexColors; // map from vertex name to its color (true = Red, false = Black)
 
@@ -99,43 +99,83 @@ public class Graph {
         return E;
     }
 
+
+    public Graph copy() {
+        Graph copyGraph = new Graph(this.V);
+
+        // Copy vertex mappings and colors
+        copyGraph.nameToIndex = new HashMap<>(this.nameToIndex);
+        copyGraph.indexToName = new ArrayList<>(this.indexToName);
+        copyGraph.vertexColors = new HashMap<>(this.vertexColors);
+
+        // Copy adjacency lists
+        copyGraph.adj = (Bag<Integer>[]) new Bag[this.V];
+        for (int v = 0; v < this.V; v++) {
+            if (this.adj[v] != null) {
+                copyGraph.adj[v] = new Bag<>();
+                for (int w : this.adj[v]) {
+                    copyGraph.adj[v].add(w);
+                }
+            } else {
+                copyGraph.adj[v] = null;
+            }
+        }
+
+        // Copy indegrees
+        copyGraph.indegree = new int[this.V];
+        System.arraycopy(this.indegree, 0, copyGraph.indegree, 0, this.V);
+
+        // Copy the edge count
+        copyGraph.E = this.E;
+
+        return copyGraph;
+    }
+
+
+
     /**
      * Removes all red vertices from the graph and updates all relevant data structures.
      */
     public void removeAllRed() {
-        // Create a list of red vertices to be removed
-        ArrayList<Integer> redVertexIndices = new ArrayList<>();
-        for (String vertex : vertexColors.keySet()) {
-            if (vertexColors.get(vertex)) { // true means Red
-                redVertexIndices.add(nameToIndex.get(vertex));
+        // Create a boolean array to mark red vertices
+        boolean[] isRedVertex = new boolean[V];
+        for (int v = 0; v < V; v++) {
+            String vertexName = indexToName.get(v);
+            if (vertexName != null && vertexColors.get(vertexName)) {
+                isRedVertex[v] = true;
             }
         }
 
-        // For each red vertex index, remove its adjacency list and remove it from other adjacency lists
-        for (int redIndex : redVertexIndices) {
-            // Remove all edges from other vertices to this red vertex
-            for (int v = 0; v < V; v++) {
-                if (adj[v] != null && v != redIndex) {
-                    Bag<Integer> newAdjList = new Bag<>();
-                    for (int w : adj[v]) {
-                        if (w != redIndex) {
-                            newAdjList.add(w); // Only keep non-red vertices
-                        }
+        // Update adjacency lists to exclude edges to red vertices
+        for (int v = 0; v < V; v++) {
+            if (adj[v] != null && !isRedVertex[v]) {
+                Bag<Integer> newAdjList = new Bag<>();
+                for (int w : adj[v]) {
+                    if (!isRedVertex[w]) {
+                        newAdjList.add(w);
+                    } else {
+                        // Update indegree of the red vertex since we're removing an incoming edge
+                        indegree[w]--;
+                        E--; // Decrement edge count
                     }
-                    adj[v] = newAdjList; // Replace with the updated adjacency list
                 }
+                adj[v] = newAdjList;
+            } else {
+                adj[v] = null; // Remove adjacency list for red vertices
             }
+        }
 
-            // Remove the red vertex from all data structures
-            String redVertexName = indexToName.get(redIndex);
-            nameToIndex.remove(redVertexName);
-            indexToName.set(redIndex, null); // Mark the index as null in the indexToName list
-            vertexColors.remove(redVertexName);
-            adj[redIndex] = null; // Clear adjacency list for the red vertex
-            indegree[redIndex] = 0;
+        // Remove red vertices from data structures
+        for (int v = 0; v < V; v++) {
+            if (isRedVertex[v]) {
+                String vertexName = indexToName.get(v);
+                nameToIndex.remove(vertexName);
+                indexToName.set(v, null);
+                vertexColors.remove(vertexName);
+                indegree[v] = 0;
+            }
         }
     }
-
 
     /**
      * Returns the vertices adjacent from vertex with the given name in this graph.
@@ -210,33 +250,5 @@ public class Graph {
             }
         }
         return s.toString();
-    }
-
-    /**
-     * Unit tests the {@code Graph} data type.
-     *
-     * @param args the command-line arguments
-     */
-    public static void main(String[] args) {
-        Graph G = new Graph(5);
-        G.addVertex("A", true); // Add vertex A and paint it Red
-        G.addVertex("B", false); // Add vertex B and paint it Black
-        G.addVertex("C", true); // Add vertex C and paint it Red
-        G.addVertex("D", false); // Add vertex D and paint it Black
-        G.addVertex("E", true); // Add vertex E and paint it Red
-
-        G.addUndirectedEdge("A", "B");
-        G.addDirectedEdge("A", "C");
-        G.addUndirectedEdge("B", "D");
-        G.addDirectedEdge("C", "D");
-        G.addDirectedEdge("D", "E");
-
-        StdOut.println("Before removing all red vertices:");
-        StdOut.println(G);
-
-        G.removeAllRed();
-
-        StdOut.println("After removing all red vertices:");
-        StdOut.println(G);
     }
 }
