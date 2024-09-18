@@ -14,40 +14,69 @@ public class SolveSome {
     }
 
     public boolean solve() {
-        return dfsSimplePath(startVertex, new HashSet<>(), new HashSet<>(), false);
+        return dfsSimplePathIterative();
     }
 
-    //Visited: Fully explored all paths from this node
-    //InPath: Current path being explored, ensures it is a simple path (no repeated vertices)
-    private boolean dfsSimplePath(String current, Set<String> visited, Set<String> inPath, boolean seenRed) {
-        // Base case: if current node is the end vertex
-        if (current.equals(endVertex)) {
-            // Return true only if a red node was encountered in this path
-            return seenRed;
+    private class NodeState {
+        String currentNodeId;
+        boolean hasEncounteredRedNodeInPath;
+        Iterator<String> nodeNeighbours;
+
+        NodeState(String currentNodeId, boolean hasEncounteredRedNodeInPath) {
+            this.currentNodeId = currentNodeId;
+            this.hasEncounteredRedNodeInPath = hasEncounteredRedNodeInPath;
+            this.nodeNeighbours = graph.adj(currentNodeId).iterator();
         }
+    }
 
-        // Mark the current node as part of the current path
-        inPath.add(current);
+    private boolean dfsSimplePathIterative() {
+        //FIFO stack for DFS traversal
+        Stack<NodeState> dfsTraversalStack = new Stack<>();
+        Set<String> fullyExploredGraphNodes = new HashSet<>();
+        Set<String> graphNodesInCurrentExplorationPath = new HashSet<>();
 
-        // Check if the current node is red
-        if (graph.vertexColors.get(current)) {
-            seenRed = true;
-        }
+        // Initialize with the start vertex
+        boolean initialNodeHasEncounteredRedNodeInPath = graph.vertexColors.getOrDefault(startVertex, false);
+        dfsTraversalStack.push(new NodeState(startVertex, initialNodeHasEncounteredRedNodeInPath));
+        graphNodesInCurrentExplorationPath.add(startVertex);
 
-        // Explore all neighbors
-        for (String neighbor : graph.adj(current)) {
-            if (!inPath.contains(neighbor) && !visited.contains(neighbor)) {
-                // Recursively visit neighbors
-                if (dfsSimplePath(neighbor, visited, inPath, seenRed)) {
-                    return true; // Found a valid path
+        while (!dfsTraversalStack.isEmpty()) {
+            NodeState currentTraversalNodeState = dfsTraversalStack.peek();
+            String currentGraphNodeIdentifier = currentTraversalNodeState.currentNodeId;
+            boolean hasEncounteredRedNodeInPath = currentTraversalNodeState.hasEncounteredRedNodeInPath;
+
+            // Base case: if current node is the end vertex
+            if (currentGraphNodeIdentifier.equals(endVertex)) {
+                if (hasEncounteredRedNodeInPath) {
+                    return true;
                 }
+                // Backtracking logic
+                dfsTraversalStack.pop();
+                // We make current path, available for exploration again from other nodes
+                graphNodesInCurrentExplorationPath.remove(currentGraphNodeIdentifier);
+                // Mark current node as fully explored, so it won't be explored again
+                fullyExploredGraphNodes.add(currentGraphNodeIdentifier);
+                continue;
+            }
+
+            // Explore neighbors
+            if (currentTraversalNodeState.nodeNeighbours.hasNext()) {
+                String neighborGraphNodeIdentifier = currentTraversalNodeState.nodeNeighbours.next();
+                if (!graphNodesInCurrentExplorationPath.contains(neighborGraphNodeIdentifier) && !fullyExploredGraphNodes.contains(neighborGraphNodeIdentifier)) {
+                    boolean neighborNodeHasEncounteredRedNodeInPath = hasEncounteredRedNodeInPath || graph.vertexColors.getOrDefault(neighborGraphNodeIdentifier, false);
+                    // Push neighbor to stack
+                    dfsTraversalStack.push(new NodeState(neighborGraphNodeIdentifier, neighborNodeHasEncounteredRedNodeInPath));
+                    graphNodesInCurrentExplorationPath.add(neighborGraphNodeIdentifier);
+                }
+            } else {
+                // Backtrack: No more neighbors to explore from current node
+                dfsTraversalStack.pop();
+                graphNodesInCurrentExplorationPath.remove(currentGraphNodeIdentifier);
+                fullyExploredGraphNodes.add(currentGraphNodeIdentifier);
             }
         }
 
-        // Backtrack: Remove the current node from the path and mark it as visited
-        inPath.remove(current);
-        visited.add(current);
-
-        return false; // No valid path found in this branch
+        //No valid path with a red node found
+        return false;
     }
 }
