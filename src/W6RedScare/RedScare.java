@@ -9,6 +9,7 @@ public class RedScare {
     private Graph graph;
     private String startVertex;
     private String endVertex;
+    private Boolean isDirected = false;
 
     public static void main(String[] args) {
         // Path to the data directory within the W6RedScare directory
@@ -27,9 +28,9 @@ public class RedScare {
         }
 
         // Print table header
-        System.out.printf("%-45s %-10s %-10s %-10s %-10s %-10s%n",
+        System.out.printf("%-60s %-10s %-10s %-10s %-10s %-10s%n",
                 "File Name", "None", "Some", "Many", "Few", "Alternate");
-        System.out.println("-".repeat(95));
+        System.out.println("-".repeat(110));
 
         for (File file : files) {
             try {
@@ -42,11 +43,11 @@ public class RedScare {
                 boolean alternateResult = solveAlternate();
 
                 // Create file name with vertex and edge counts
-                String fileNameWithCounts = String.format("%s (V:%d - E:%d)",
-                        fileName, graph.getVertexCount(), graph.getEdgeCount());
+                String fileNameWithCounts = String.format("%s (V:%d - E:%d - D:%s)",
+                        fileName, graph.getVertexCount(), graph.getEdgeCount(), isDirected ? 'T' : 'F');
 
                 // Print results in table format
-                System.out.printf("%-45s %-10d %-10b %-10d %-10d %-10b%n",
+                System.out.printf("%-60s %-10d %-10b %-10d %-10d %-10b%n",
                         fileNameWithCounts, noneResult, someResult, manyResult, fewResult, alternateResult);
 
             } catch (FileNotFoundException e) {
@@ -81,8 +82,10 @@ public class RedScare {
             String edgeType = edgeParts[1];
             if (edgeType.equals("->")) {
                 graph.addDirectedEdge(from, to);
+                isDirected = true;
             } else {
                 graph.addUndirectedEdge(from, to);
+                isDirected = false;
             }
         }
 
