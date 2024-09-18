@@ -1,0 +1,25 @@
+﻿/*
+Short version of the problem:
+
+Unweighted
+Both directed and undirected
+No parallel edges
+
+simple path: no repeated vertices (så ex, kan man ikke lave et spanning tree, og blot vandrer frem og tilbage og ramme alle vertices)
+
+
+Always has start and end vertices (Can also be red)
+
+
+Data format:
+n m r       //n vertices, m edges, r red vertices
+s t         //start and end vertices
+<vertices>
+black: BOB
+red: BOB *
+<edges>
+undirected: u -- v
+directed: u -> v
+
+*
+* */

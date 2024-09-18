@@ -20,7 +20,7 @@ public class Graph {
     private HashMap<String, Integer> nameToIndex; // map from vertex name to index
     private ArrayList<String> indexToName;        // map from index to vertex name
 
-    private HashMap<String, Boolean> vertexColors; // map from vertex name to its color (true = Red, false = Black)
+    public HashMap<String, Boolean> vertexColors; // map from vertex name to its color (true = Red, false = Black)
 
     /**
      * Initializes an empty graph with a given number of vertices.
@@ -88,6 +88,15 @@ public class Graph {
     public void addUndirectedEdge(String vName, String wName) {
         addDirectedEdge(vName, wName);
         addDirectedEdge(wName, vName);
+    }
+
+
+    public int getVertexCount() {
+        return V;
+    }
+
+    public int getEdgeCount() {
+        return E;
     }
 
     /**
