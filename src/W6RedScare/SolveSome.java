@@ -14,29 +14,40 @@ public class SolveSome {
     }
 
     public boolean solve() {
-        return dfsSimplePath(startVertex, new HashSet<>(), false);
+        return dfsSimplePath(startVertex, new HashSet<>(), new HashSet<>(), false);
     }
 
-    private boolean dfsSimplePath(String current, Set<String> visited, boolean seenRed) {
+    //Visited: Fully explored all paths from this node
+    //InPath: Current path being explored, ensures it is a simple path (no repeated vertices)
+    private boolean dfsSimplePath(String current, Set<String> visited, Set<String> inPath, boolean seenRed) {
+        // Base case: if current node is the end vertex
         if (current.equals(endVertex)) {
+            // Return true only if a red node was encountered in this path
             return seenRed;
         }
 
-        visited.add(current);
+        // Mark the current node as part of the current path
+        inPath.add(current);
 
+        // Check if the current node is red
         if (graph.vertexColors.get(current)) {
             seenRed = true;
         }
 
+        // Explore all neighbors
         for (String neighbor : graph.adj(current)) {
-            if (!visited.contains(neighbor)) {
-                if (dfsSimplePath(neighbor, visited, seenRed)) {
-                    return true;
+            if (!inPath.contains(neighbor) && !visited.contains(neighbor)) {
+                // Recursively visit neighbors
+                if (dfsSimplePath(neighbor, visited, inPath, seenRed)) {
+                    return true; // Found a valid path
                 }
             }
         }
 
-        visited.remove(current);
-        return false;
+        // Backtrack: Remove the current node from the path and mark it as visited
+        inPath.remove(current);
+        visited.add(current);
+
+        return false; // No valid path found in this branch
     }
 }

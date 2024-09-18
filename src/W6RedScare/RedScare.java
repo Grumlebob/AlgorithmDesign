@@ -101,7 +101,6 @@ public class RedScare {
     private boolean solveSome() {
         SolveSome solver = new SolveSome(graph, startVertex, endVertex);
         return solver.solve();
-        //return true;
     }
 
     private int solveMany() {
