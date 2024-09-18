@@ -53,16 +53,6 @@ public class SolveNone {
     }
 
     /**
-     * Is there a directed path from the source {@code s} (or sources) to vertex {@code v}?
-     * @param v the vertex
-     * @return {@code true} if there is a directed path, {@code false} otherwise
-     * @throws IllegalArgumentException unless {@code 0 <= v < V}
-     */
-    public boolean hasPathTo(int v) {
-        return marked[v];
-    }
-
-    /**
      * Returns the number of edges in a shortest path from the source {@code s}
      * (or sources) to vertex {@code v}?
      * @param v the vertex

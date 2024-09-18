@@ -21,10 +21,13 @@ public class RedScare {
 
 
     private int solveNone() {
-        //return -1;
         // Create a copy of the graph to avoid modifying the original
         Graph graphCopy = graph.copy();
+        //TODO. Nedenunder er ikke helt korrekt. Hvis s og t er rød, så
+        //SKAL MAN IKKE FJERNE DEM.
+        //Give removeallred s and t, og
         graphCopy.removeAllRed();
+
 
         //Check if start and end is still in the graph, ie not red.
         Integer startIdx = graphCopy.nameToIndex.get(startVertex);

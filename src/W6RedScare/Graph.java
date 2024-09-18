@@ -134,6 +134,7 @@ public class Graph {
 
 
     /**
+     * USED FOR SOLVENONE, where we remove red vertices from the graph
      * Removes all red vertices from the graph and updates all relevant data structures.
      */
     public void removeAllRed() {
