@@ -1,6 +1,6 @@
 package W6RedScare;
 
-public enum ResultWithInfo {
+public enum ResultWithBoolInfo {
     TRUE,
     FALSE,
     TIMEOUT;

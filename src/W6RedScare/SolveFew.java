@@ -22,11 +22,11 @@ public class SolveFew {
      * @param s the source vertex index
      */
     public SolveFew(Graph G, int s) {
-        marked = new boolean[G.V];
-        minRedVerticesToV = new int[G.V];
-        edgeTo = new int[G.V];
+        marked = new boolean[G.countOfVertices];
+        minRedVerticesToV = new int[G.countOfVertices];
+        edgeTo = new int[G.countOfVertices];
 
-        for (int v = 0; v < G.V; v++)
+        for (int v = 0; v < G.countOfVertices; v++)
             minRedVerticesToV[v] = INFINITY;
 
         // Initialize minRedVerticesToV[V]

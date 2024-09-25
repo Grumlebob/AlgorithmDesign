@@ -1,39 +1,43 @@
 package W6RedScare;
 
 import Shared.Bag;
-import Shared.StdOut;
+import Shared.Queue;
 
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Modified version of the Graph class to handle vertices with string names, both directed and undirected edges, and vertex coloring.
  */
 public class Graph {
     private static final String NEWLINE = System.getProperty("line.separator");
-
-    public int V; // number of vertices in this graph
-    public int E;       // number of edges in this graph
+    public boolean isDirected;
+    public int countOfVertices; // number of vertices in this graph
+    public int countOfEdgesCalculated;       // number of edges in this graph
+    public int countOfEdgesAssignment;
+    public int countOfRedVertices;
     public Bag<Integer>[] adj;    // adj[v] = adjacency list for vertex v
     public int[] indegree;        // indegree[v] = indegree of vertex v
     public HashMap<String, Integer> nameToIndex; // map from vertex name to index
     public ArrayList<String> indexToName;        // map from index to vertex name
 
-    public HashMap<String, Boolean> vertexColors; // map from vertex name to its color (true = Red, false = Black)
+    //(true = Red, false = Black)
+    public HashMap<String, Boolean> vertexColors; // map from vertex name to its color
+
 
     /**
      * Initializes an empty graph with a given number of vertices.
      *
-     * @param V the number of vertices
+     * @param countOfVertices the number of vertices
      */
-    public Graph(int V) {
-        if (V < 0) throw new IllegalArgumentException("Number of vertices in a Graph must be non-negative");
-        this.V = V;
-        this.E = 0;
-        indegree = new int[V];
-        adj = (Bag<Integer>[]) new Bag[V];
-        for (int v = 0; v < V; v++) {
+    public Graph(int countOfVertices, int countOfEdgesAssignment, int countOfRedVertices) {
+        this.countOfVertices = countOfVertices;
+        this.countOfEdgesCalculated = 0;
+        this.countOfEdgesAssignment = countOfEdgesAssignment;
+        this.countOfRedVertices = countOfRedVertices;
+        indegree = new int[countOfVertices];
+        adj = (Bag<Integer>[]) new Bag[countOfVertices];
+        for (int v = 0; v < countOfVertices; v++) {
             adj[v] = new Bag<Integer>();
         }
 
@@ -76,7 +80,7 @@ public class Graph {
         int w = nameToIndex.get(wName);
         adj[v].add(w);
         indegree[w]++;
-        E++;
+        countOfEdgesCalculated++;
     }
 
     /**
@@ -92,25 +96,33 @@ public class Graph {
 
 
     public int getVertexCount() {
-        return V;
+        return countOfVertices;
     }
 
-    public int getEdgeCount() {
-        return E;
+    public int getEdgeCountCalculated() {
+        return countOfEdgesCalculated;
+    }
+
+    public int getEdgeCountAssignment() {
+        return countOfEdgesAssignment;
+    }
+
+    public int GetCountOfRedVertices() {
+        return countOfRedVertices;
     }
 
 
     public Graph copy() {
-        Graph copyGraph = new Graph(this.V);
-
+        Graph copyGraph = new Graph(this.countOfVertices, this.countOfEdgesAssignment, this.countOfRedVertices);
+        copyGraph.isDirected = this.isDirected;
         // Copy vertex mappings and colors
         copyGraph.nameToIndex = new HashMap<>(this.nameToIndex);
         copyGraph.indexToName = new ArrayList<>(this.indexToName);
         copyGraph.vertexColors = new HashMap<>(this.vertexColors);
 
         // Copy adjacency lists
-        copyGraph.adj = (Bag<Integer>[]) new Bag[this.V];
-        for (int v = 0; v < this.V; v++) {
+        copyGraph.adj = (Bag<Integer>[]) new Bag[this.countOfVertices];
+        for (int v = 0; v < this.countOfVertices; v++) {
             if (this.adj[v] != null) {
                 copyGraph.adj[v] = new Bag<>();
                 for (int w : this.adj[v]) {
@@ -122,11 +134,11 @@ public class Graph {
         }
 
         // Copy indegrees
-        copyGraph.indegree = new int[this.V];
-        System.arraycopy(this.indegree, 0, copyGraph.indegree, 0, this.V);
+        copyGraph.indegree = new int[this.countOfVertices];
+        System.arraycopy(this.indegree, 0, copyGraph.indegree, 0, this.countOfVertices);
 
         // Copy the edge count
-        copyGraph.E = this.E;
+        copyGraph.countOfEdgesCalculated = this.countOfEdgesCalculated;
 
         return copyGraph;
     }
@@ -139,8 +151,8 @@ public class Graph {
      */
     public void removeAllRed(int s, int t) {
         // Create a boolean array to mark red vertices
-        boolean[] isRedVertex = new boolean[V];
-        for (int v = 0; v < V; v++) {
+        boolean[] isRedVertex = new boolean[countOfVertices];
+        for (int v = 0; v < countOfVertices; v++) {
             String vertexName = indexToName.get(v);
             if (vertexName != null && vertexColors.get(vertexName)) {
                 isRedVertex[v] = true;
@@ -152,7 +164,7 @@ public class Graph {
         isRedVertex[t] = false;
 
         // Update adjacency lists to exclude edges to red vertices
-        for (int v = 0; v < V; v++) {
+        for (int v = 0; v < countOfVertices; v++) {
             if (adj[v] != null && !isRedVertex[v]) {
                 Bag<Integer> newAdjList = new Bag<>();
                 for (int w : adj[v]) {
@@ -161,7 +173,7 @@ public class Graph {
                     } else {
                         // Update indegree of the red vertex since we're removing an incoming edge
                         indegree[w]--;
-                        E--; // Decrement edge count
+                        countOfEdgesCalculated--; // Decrement edge count
                     }
                 }
                 adj[v] = newAdjList;
@@ -171,7 +183,7 @@ public class Graph {
         }
 
         // Remove red vertices from data structures, except s and t
-        for (int v = 0; v < V; v++) {
+        for (int v = 0; v < countOfVertices; v++) {
             if (isRedVertex[v] && v != s && v != t) {
                 String vertexName = indexToName.get(v);
                 nameToIndex.remove(vertexName);
@@ -204,7 +216,7 @@ public class Graph {
     }
 
     public Iterable<Integer> adj(int v) {
-        if (v >= V) {
+        if (v >= countOfVertices) {
             throw new IllegalArgumentException("Vertex " + v + " does not exist.");
         }
 
@@ -217,22 +229,6 @@ public class Graph {
         return adjacentVertices;
     }
 
-    /**
-     * Returns the reverse of the graph.
-     *
-     * @return the reverse of the graph
-     */
-    public Graph reverse() {
-        Graph reverse = new Graph(V);
-        for (int v = 0; v < V; v++) {
-            if (adj[v] != null) {
-                for (int w : adj[v]) {
-                    reverse.addDirectedEdge(indexToName.get(w), indexToName.get(v));
-                }
-            }
-        }
-        return reverse;
-    }
 
     /**
      * Returns a string representation of the graph.
@@ -242,8 +238,8 @@ public class Graph {
      */
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(V + " vertices, " + E + " edges " + NEWLINE);
-        for (int v = 0; v < V; v++) {
+        s.append(countOfVertices + " vertices, " + countOfEdgesCalculated + " edges " + NEWLINE);
+        for (int v = 0; v < countOfVertices; v++) {
             if (indexToName.get(v) != null) {
                 String color = vertexColors.get(indexToName.get(v)) ? "Red" : "Black";
                 s.append(String.format("%s (%s): ", indexToName.get(v), color));
@@ -256,5 +252,55 @@ public class Graph {
             }
         }
         return s.toString();
+    }
+
+    //Topological sorting, Inspired by Kahns Algortihm
+    //https://www.geeksforgeeks.org/topological-sorting-indegree-based-solution/
+
+    /**
+     * Performs a topological sort on the graph and checks if it is a DAG (Directed Acyclic Graph).
+     * If the graph contains a cycle, it is not a DAG and the method returns null.
+     * Otherwise, it returns an ordered list of vertices in topological order.
+     *
+     * @return A list of vertex names in topological order if the graph is a DAG, null otherwise.
+     */
+    public ArrayList<String> topologicalSortDirected() {
+        // Create an array to keep track of the in-degree of each vertex
+        int[] inDegree = new int[countOfVertices];
+        System.arraycopy(indegree, 0, inDegree, 0, countOfVertices); // Copy the in-degree values
+
+        // Queue for vertices with no incoming edges (in-degree 0)
+        ArrayList<String> topologicalOrder = new ArrayList<>();
+        Queue<Integer> zeroInDegreeQueue = new Queue<>();
+
+        // Add all vertices with in-degree 0 to the queue
+        for (int v = 0; v < countOfVertices; v++) {
+            if (inDegree[v] == 0 && indexToName.get(v) != null) {
+                zeroInDegreeQueue.enqueue(v);
+            }
+        }
+
+        // Process vertices with in-degree 0
+        while (!zeroInDegreeQueue.isEmpty()) {
+            int v = zeroInDegreeQueue.dequeue();
+            topologicalOrder.add(indexToName.get(v));
+
+            // Reduce in-degree of all adjacent vertices
+            for (int w : adj[v]) {
+                inDegree[w]--;
+                // If in-degree becomes 0, add the vertex to the queue
+                if (inDegree[w] == 0) {
+                    zeroInDegreeQueue.enqueue(w);
+                }
+            }
+        }
+
+        // If topological order includes all vertices, the graph is a DAG
+        if (topologicalOrder.size() == nameToIndex.size()) {
+            return topologicalOrder;
+        } else {
+            // The graph has a cycle and is not a DAG
+            return null;
+        }
     }
 }

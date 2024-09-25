@@ -20,12 +20,12 @@ public class SolveNone {
 
 
     public SolveNone(Graph graph, int startVertex) {
-        marked = new boolean[graph.V];
-        distTo = new int[graph.V];
-        edgeTo = new int[graph.V];
+        marked = new boolean[graph.countOfVertices];
+        distTo = new int[graph.countOfVertices];
+        edgeTo = new int[graph.countOfVertices];
         this.graph = graph;
         this.startVertex = startVertex;
-        for (int v = 0; v < graph.V; v++)
+        for (int v = 0; v < graph.countOfVertices; v++)
             distTo[v] = INFINITY;
     }
 

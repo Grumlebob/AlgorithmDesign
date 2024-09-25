@@ -25,7 +25,7 @@ public class SolveSome {
         }
     }
 
-    public ResultWithInfo findPathWithRedNodeDfs(long startTime, long timeLimit) {
+    public ResultWithBoolInfo findPathWithRedNodeDfs(long startTime, long timeLimit) {
         //FIFO stack for DFS traversal
         Stack<TraverseState> dfsTraversalStack = new Stack<>();
         //Nodes where all neighbor sub-graphs have been fully explored
@@ -41,7 +41,7 @@ public class SolveSome {
         while (!dfsTraversalStack.isEmpty()) {
             if (System.currentTimeMillis() - startTime > timeLimit) {
                 // Time limit exceeded; return false
-                return ResultWithInfo.TIMEOUT;
+                return ResultWithBoolInfo.TIMEOUT;
             }
 
             TraverseState currentTraverseState = dfsTraversalStack.peek();
@@ -51,7 +51,7 @@ public class SolveSome {
             // Base case: if current node is the end vertex
             if (currentNode.equals(endVertex)) {
                 if (redNodeEncountered) {
-                    return ResultWithInfo.TRUE;
+                    return ResultWithBoolInfo.TRUE;
                 }
                 // Backtracking logic
                 dfsTraversalStack.pop();
@@ -80,10 +80,10 @@ public class SolveSome {
         }
 
         //No valid path with a red node found
-        return ResultWithInfo.FALSE;
+        return ResultWithBoolInfo.FALSE;
     }
 
-    public static void VerifyEdgecaseResults(String filename, ResultWithInfo result) {
+    public static void VerifyEdgecaseResults(String filename, ResultWithBoolInfo result) {
         switch (filename) {
             case "edgecase-solveNone-blackSrcToRedSink.txt",
                  "edgecase-solveNone-redSrcToBlackSink.txt",
@@ -94,7 +94,7 @@ public class SolveSome {
                  "rusty-1-17.txt",
                  "grid-5-0.txt",
                  "ski-illustration.txt":
-                if (result != ResultWithInfo.TRUE) {
+                if (result != ResultWithBoolInfo.TRUE) {
                     System.out.println("------------");
                     System.out.println("ERROR: Expected true, got " + result);
                     System.out.println("------------");
@@ -102,7 +102,7 @@ public class SolveSome {
                 break;
 
             case "wall-z-3.txt":
-                if (result != ResultWithInfo.FALSE) {
+                if (result != ResultWithBoolInfo.FALSE) {
                     System.out.println("------------");
                     System.out.println("ERROR: Expected false, got " + result);
                     System.out.println("------------");

@@ -38,18 +38,17 @@ public class RedScare {
     See image SolveNone_example_Should_be_true.jpg for understanding.
     This image made us realise, that this problem is NP-hard.
 
-
     * The algorithm may need to explore all possible simple paths from s to t to
     * determine whether any of them includes at least one red node.
     *
     *  the number of simple paths can be up to O(n!)
 
     * */
-    private ResultWithInfo solveSome(String filename) {
+    private ResultWithBoolInfo solveSome(String filename) {
         // since some instances may take a long time to solve
         // we will limit the time to x seconds
         long startTime = System.currentTimeMillis();
-        long timeLimit = 10 * 1000; // x secs
+        long timeLimit = 2 * 1000; // x secs
         Graph graphCopy = graph.copy();
         SolveSome solver = new SolveSome(graphCopy, startVertex, endVertex);
         var result = solver.findPathWithRedNodeDfs(startTime, timeLimit);
@@ -64,15 +63,12 @@ public class RedScare {
     * we have a redVerticesTo
     Longest Path Problem is NP-hard in general graphs with cycles
      */
-    private int solveMany() {
-
+    private ResultWithIntInfo solveMany(String filename) {
         Graph graphCopy = graph.copy();
-        //Check if DAG
-        //if dag, we can use X algorithm
-        //else we can use Y algorithm which runs in (something like O(2^n))
-
-        return -1;
-
+        SolveMany solver = new SolveMany(graphCopy, startVertexInt, endVertexInt);
+        var result = solver.solve();
+        SolveMany.VerifyEdgecaseResults(filename, result);
+        return result;
     }
 
     /*
@@ -86,12 +82,6 @@ public class RedScare {
 * and find shortest path as that path would have fewest red vertices
 *
 *
-* TODO implement i verifyEdgecaseResults
-* Another point:
-* If SolveNone returns a path,
-* then SolveFew will also return a path with 0 red vertices!
-*
-* If SolveSome returns false, then SolveFew will also return -1
 *
     * */
     private int solveFew(String filename) {
@@ -128,18 +118,68 @@ public class RedScare {
                 String fileName = file.getName();
                 startVertexInt = graph.nameToIndex.get(startVertex);
                 endVertexInt = graph.nameToIndex.get(endVertex);
-                int noneResult = solveNone(fileName);
-                ResultWithInfo someResult = solveSome(fileName);
-                int manyResult = solveMany();
-                int fewResult = solveFew(fileName);
-                boolean alternateResult = solveAlternate(fileName);
+                int edgeCount = graph.getEdgeCountAssignment();
+                int redVertexCount = graph.GetCountOfRedVertices();
+
+                //SOLVE NONE
+                int noneResult;
+                if (edgeCount == 0) {
+                    noneResult = -1;
+                }
+                else {
+                    noneResult = solveNone(fileName);
+                }
+                //SOLVE SOME
+                ResultWithBoolInfo someResult;
+                if (redVertexCount == 0 || edgeCount == 0) {
+                    someResult = ResultWithBoolInfo.FALSE;
+                } else {
+                    someResult = solveSome(fileName);
+                }
+
+                //SOLVE MANY
+                ResultWithIntInfo manyResult;
+                if (edgeCount == 0) {
+                    manyResult = ResultWithIntInfo.VALUE.setValue(-1);
+                }
+                //If there is a path (solveNone),
+                //and no path with red vertices (solveSome)
+                //we know the longest path with red vertices is 0.
+                else if (someResult == ResultWithBoolInfo.FALSE && noneResult != -1) {
+                    manyResult = ResultWithIntInfo.VALUE.setValue(0);
+                }
+                else {
+                    manyResult = solveMany(fileName);
+                }
+
+                //SOLVE FEW
+                int fewResult;
+                if (edgeCount == 0) {
+                    fewResult = -1;
+                }
+                //If SolveNone returns a path,
+                //then SolveFew will also return a path with 0 red vertices!
+                else if (noneResult != -1) {
+                    fewResult = 0;
+                }
+                else {
+                    fewResult = solveFew(fileName);
+                }
+
+                //SOLVE ALTERNATE
+                boolean alternateResult;
+                if (edgeCount == 0) {
+                    alternateResult = false;
+                } else {
+                    alternateResult = solveAlternate(fileName);
+                }
 
                 //Format filename + additional input info for the file
                 String fileNameWithCounts = String.format("%s (V:%d - E:%d - D:%s)",
-                        fileName, graph.getVertexCount(), graph.getEdgeCount(), isDirected ? 'T' : 'F');
+                        fileName, graph.getVertexCount(), graph.getEdgeCountCalculated(), isDirected ? 'T' : 'F');
 
                 //Result of the file for all methods.
-                System.out.printf("%-60s %-10d %-10s %-10d %-10d %-10b%n",
+                System.out.printf("%-60s %-10d %-10s %-10s %-10d %-10B%n",
                         fileNameWithCounts, noneResult, someResult.toString(), manyResult, fewResult, alternateResult);
 
             } catch (FileNotFoundException e) {
@@ -159,7 +199,7 @@ public class RedScare {
         endVertex = scanner.next();
         scanner.nextLine();
 
-        graph = new Graph(countOfVertices);
+        graph = new Graph(countOfVertices, countOfEdges, countOfRedVertices);
 
         for (int i = 0; i < countOfVertices; i++) {
             String vertexLine = scanner.nextLine();
@@ -181,7 +221,7 @@ public class RedScare {
                 isDirected = false;
             }
         }
+        graph.isDirected = isDirected;
 
-        scanner.close();
     }
 }

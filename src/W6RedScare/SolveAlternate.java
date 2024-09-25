@@ -19,10 +19,10 @@ public class SolveAlternate {
     public SolveAlternate(Graph G, int s) {
         graph = G;
         startVertex = s;
-        marked = new boolean[G.V];
-        distTo = new int[G.V];
-        edgeTo = new int[G.V];
-        for (int v = 0; v < G.V; v++)
+        marked = new boolean[G.countOfVertices];
+        distTo = new int[G.countOfVertices];
+        edgeTo = new int[G.countOfVertices];
+        for (int v = 0; v < G.countOfVertices; v++)
             distTo[v] = INFINITY;
     }
 
