@@ -89,7 +89,6 @@ public class SolveMany {
     private void relax(int v, int w) {
         int weight = graph.vertexColors.get(graph.indexToName.get(w)) ? 1 : 0; // 1 for red, 0 for black
 
-
         if (maxRedVerticesToV[w] < maxRedVerticesToV[v] + weight) {
             //inf + w = inf
             if (maxRedVerticesToV[v] == NEG_INFINITY) {

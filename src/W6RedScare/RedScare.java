@@ -34,7 +34,6 @@ public class RedScare {
     }
 
     /*
-
     See image SolveNone_example_Should_be_true.jpg for understanding.
     This image made us realise, that this problem is NP-hard.
 
